@@ -110,14 +110,13 @@ def plot_images():
     image = X_train[index].squeeze()
     plt.figure(figsize=(1, 1))
     plt.imshow(image)
-    print(y_train[index])
+    # print(y_train[index])
 
-
-plot_images()
-plot_images()
-plot_images()
-plot_images()
-plot_images()
+# plot_images()
+# plot_images()
+# plot_images()
+# plot_images()
+# plot_images()
 
 
 from sklearn.utils import shuffle
@@ -131,6 +130,7 @@ X_train, y_train = shuffle(X_train, y_train)
 
 # In[8]:
 
+
 import tensorflow as tf
 
 EPOCHS = 10
@@ -138,6 +138,47 @@ BATCH_SIZE = 128
 
 from tensorflow.contrib.layers import flatten
 
+#
+# def conv2d(x, W, b, strides=1):
+#     x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='VALID')
+#     x = tf.nn.bias_add(x, b)
+#     return tf.nn.tanh(x)
+#
+#
+# def maxpool2d(x, k=2):
+#     return tf.nn.max_pool(
+#         x,
+#         ksize=[1, k, k, 1],`
+#         strides=[1, k, k, 1],
+#         padding='VALID')
+import cv2
+
+def normalize(X):
+    X = X / 255.0
+    return X
+
+
+def equalize_channel(X):
+    for i in range(0, 3):
+        channel = X[:, :, i]
+        channel = channel.astype(np.uint8)
+        channel = cv2.equalizeHist(channel)
+        X[:, :, i] = channel
+    return X
+
+
+def pre_process(X):
+    result = []
+    for i in range(0, X.shape[0]):
+        img = np.array(X[i, :, :, :])
+        equalize_channel(img)
+        img = normalize(img)
+        result.append(img)
+
+    return np.array(result)
+
+X_train = pre_process(X_train)
+X_test = pre_process(X_test)
 
 def LeNet(x):
     # Hyperparameters
@@ -198,7 +239,6 @@ one_hot_y = tf.one_hot(y, 43)
 
 
 rate = 0.001
-
 logits = LeNet(x)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, one_hot_y)
 loss_operation = tf.reduce_mean(cross_entropy)
