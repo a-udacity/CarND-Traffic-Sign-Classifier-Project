@@ -142,3 +142,4 @@ Model saved
 The accuracy decreased when i increased the mean to .2
 The accuracy decreated when i increated the learning reate to 0.01
 The accuracy decreased when i modified the max pool to average pool to 85%
+After adding dropout and changing EPOCH to 100....I got an accuracy of over 98%..This is the model i selected
