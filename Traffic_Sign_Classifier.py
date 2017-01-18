@@ -100,6 +100,14 @@ plot_images(X_train)
 plot_images(X_train)
 plot_images(X_train)
 
+# plt.figure(figsize=(15,15))
+# def plot_images_randomly(image_data):
+#     for i in range(15):
+#         index = random.randint(0, len(image_data))
+#         plt.subplot(6,5,i+1)
+#         plt.imshow(image_data[index])
+#
+# plot_images_randomly(X_train)
 
 # ----
 # 
