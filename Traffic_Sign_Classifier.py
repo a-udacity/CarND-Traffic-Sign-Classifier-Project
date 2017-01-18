@@ -16,12 +16,12 @@
 # ---
 # ## Step 0: Load The Data
 
-# In[5]:
+# In[1]:
 
 # Load pickled data
 import pickle
 
-# Fill this in based on where you saved the training and testing data
+# TODO: Fill this in based on where you saved the training and testing data
 
 training_file = 'traffic-signs-data/train.p'
 testing_file = 'traffic-signs-data/test.p'
@@ -34,20 +34,7 @@ with open(testing_file, mode='rb') as f:
 X_train, y_train = train['features'], train['labels']
 X_test, y_test = test['features'], test['labels']
 
-from sklearn.model_selection import train_test_split
 
-X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-
-assert (len(X_train) == len(y_train))
-assert (len(X_validation) == len(y_validation))
-assert (len(X_test) == len(y_test))
-
-print()
-print("Image Shape: {}".format(X_train[0].shape))
-print()
-print("Training Set:   {} samples".format(len(X_train)))
-print("Validation Set: {} samples".format(len(X_validation)))
-print("Test Set:       {} samples".format(len(X_test)))
 # ---
 # 
 # ## Step 1: Dataset Summary & Exploration
@@ -61,21 +48,20 @@ print("Test Set:       {} samples".format(len(X_test)))
 # 
 # Complete the basic data summary below.
 
-# In[ ]:
+# In[2]:
 
 ### Replace each question mark with the appropriate value.
 
-
-# Number of training examples
+# TODO: Number of training examples
 n_train = len(X_train)
 
-# Number of testing examples.
+# TODO: Number of testing examples.
 n_test = len(X_test)
 
-# What's the shape of an traffic sign image?
+# TODO: What's the shape of an traffic sign image?
 image_shape = X_train.shape[0]
 
-# How many unique classes/labels there are in the dataset.
+# TODO: How many unique classes/labels there are in the dataset.
 n_classes = 43
 
 print("Number of training examples =", n_train)
@@ -90,67 +76,56 @@ print("Number of classes =", n_classes)
 # 
 # **NOTE:** It's recommended you start with something simple first. If you wish to do more, come back to it after you've completed the rest of the sections.
 
-# In[ ]:
+# In[3]:
 
 ### Data exploration visualization goes here.
 ### Feel free to use as many code cells as needed.
-import matplotlib.pyplot as plt
-# Visualizations will be shown in the notebook.
-#get_ipython().magic('matplotlib inline')
-
-
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-#get_ipython().magic('matplotlib inline')
+get_ipython().magic('matplotlib inline')
 
-def plot_images():
+def plot_images(X_train):
     index = random.randint(0, len(X_train))
     image = X_train[index].squeeze()
     plt.figure(figsize=(1, 1))
     plt.imshow(image)
     # print(y_train[index])
 
-# plot_images()
-# plot_images()
-# plot_images()
-# plot_images()
-# plot_images()
+
+plot_images(X_train)
+plot_images(X_train)
+plot_images(X_train)
+plot_images(X_train)
+plot_images(X_train)
 
 
-from sklearn.utils import shuffle
+# ----
+# 
+# ## Step 2: Design and Test a Model Architecture
+# 
+# Design and implement a deep learning model that learns to recognize traffic signs. Train and test your model on the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset).
+# 
+# There are various aspects to consider when thinking about this problem:
+# 
+# - Neural network architecture
+# - Play around preprocessing techniques (normalization, rgb to grayscale, etc)
+# - Number of examples per label (some have more than others).
+# - Generate fake data.
+# 
+# Here is an example of a [published baseline model on this problem](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf). It's not required to be familiar with the approach used in the paper but, it's good practice to try to read papers like these.
+# 
+# **NOTE:** The LeNet-5 implementation shown in the [classroom](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/601ae704-1035-4287-8b11-e2c2716217ad/concepts/d4aca031-508f-4e0b-b493-e7b706120f81) at the end of the CNN lesson is a solid starting point. You'll have to change the number of classes and possibly the preprocessing, but aside from that it's plug and play!
 
-X_train, y_train = shuffle(X_train, y_train)
+# ### Implementation
+# 
+# Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.
 
-# ## Setup TensorFlow
-# The `EPOCH` and `BATCH_SIZE` values affect the training speed and model accuracy.
-#
-# You do not need to modify this section.
+# In[4]:
 
-# In[8]:
-
-
-import tensorflow as tf
-
-EPOCHS = 10
-BATCH_SIZE = 128
-
-from tensorflow.contrib.layers import flatten
-
-#
-# def conv2d(x, W, b, strides=1):
-#     x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='VALID')
-#     x = tf.nn.bias_add(x, b)
-#     return tf.nn.tanh(x)
-#
-#
-# def maxpool2d(x, k=2):
-#     return tf.nn.max_pool(
-#         x,
-#         ksize=[1, k, k, 1],`
-#         strides=[1, k, k, 1],
-#         padding='VALID')
+### Preprocess the data here.
+### Feel free to use as many code cells as needed.
 import cv2
 
 def normalize(X):
@@ -180,12 +155,84 @@ def pre_process(X):
 X_train = pre_process(X_train)
 X_test = pre_process(X_test)
 
+
+# ### Question 1 
+# 
+# _Describe how you preprocessed the data. Why did you choose that technique?_
+
+# **Answer:**
+# A histogram equalization is performed on the three color channels (RGB) and the pixel values are then (Y) in order to improve contrast and accentuate edges. All color channels are then divided by 255.0 in order to ensure that all samples lie in the range (0.0, 1.0) . This technique was utilized to prevent saturation of neurons in the convolutional neural network
+
+# In[5]:
+
+### Generate data additional data (OPTIONAL!)
+### and split the data into training/validation/testing sets here.
+### Feel free to use as many code cells as needed.
+from sklearn.model_selection import train_test_split
+X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+
+assert (len(X_train) == len(y_train))
+assert (len(X_validation) == len(y_validation))
+assert (len(X_test) == len(y_test))
+
+print()
+print("Image Shape: {}".format(X_train[0].shape))
+print()
+print("Training Set:   {} samples".format(len(X_train)))
+print("Validation Set: {} samples".format(len(X_validation)))
+print("Test Set:       {} samples".format(len(X_test)))
+plot_images(X_train)
+plot_images(X_train)
+
+
+# ### Question 2
+# 
+# _Describe how you set up the training, validation and testing data for your model. **Optional**: If you generated additional data, how did you generate the data? Why did you generate the data? What are the differences in the new dataset (with generated data) from the original dataset?_
+
+# **Answer:**
+# The training and validation data was split following the general rule of thumb of 8:2 using the train_test_split function.
+
+# In[6]:
+
+### Define your architecture here.
+### Feel free to use as many code cells as needed.
+
+
+# ### Question 3
+# 
+# _What does your final architecture look like? (Type of model, layers, sizes, connectivity, etc.)  For reference on how to build a deep neural network using TensorFlow, see [Deep Neural Network in TensorFlow
+# ](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/b516a270-8600-4f93-a0a3-20dfeabe5da6/concepts/83a3a2a2-a9bd-4b7b-95b0-eb924ab14432) from the classroom._
+# 
+
+# **Answer:**
+# TODO:::: AZIZ need to revisit all the layers and shapes
+# LENET-5 Architecture was used:
+# Image
+# Convolution
+# Max Pooling
+# Convolution
+# Max Pooling
+# Fully Connected Layer
+# Fully Connected Layer
+# Classifier
+# 
+# Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.
+# Pooling. Input = 28x28x6. Output = 14x14x6.
+# Layer 2: Convolutional. Output = 10x10x16. Pooling. Input = 10x10x16. Output = 5x5x16. Flatten. Input = 5x5x16. Output = 400.
+# Layer 3: Fully Connected. Input = 800. Output = 240. Layer 4: Fully Connected. Input = 240. Output = 168. Layer 5: Fully Connected. Input = 168. Output = 86. Layer 5: Fully Connected. Input = 43. Output = ??.
+# 
+
+# In[7]:
+
+
+### Train your model here.
+### Feel free to use as many code cells as needed.
 def LeNet(x):
     # Hyperparameters
     mu = 0
     sigma = 0.1
 
-    # Layer 1: Convolutional. Input = 32x32x1. Output = 28x28x6.
+    # Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.
     conv1_W = tf.Variable(tf.truncated_normal(shape=(5, 5, 3, 6), mean=mu, stddev=sigma))
     conv1_b = tf.Variable(tf.zeros(6))
     conv1 = tf.nn.conv2d(x, conv1_W, strides=[1, 1, 1, 1], padding='VALID') + conv1_b
@@ -203,6 +250,7 @@ def LeNet(x):
 
     # Activation.
     conv2 = tf.nn.relu(conv2)
+    #conv2 = tf.nn.dropout(conv2, keep_prob)
 
     # Pooling. Input = 10x10x16. Output = 5x5x16.
     conv2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID')
@@ -217,27 +265,53 @@ def LeNet(x):
 
     # Activation.
     fc1 = tf.nn.relu(fc1)
+    #fc1 = tf.nn.dropout(fc1, keep_prob)
 
     # Layer 4: Fully Connected. Input = 120. Output = 84.
     fc2_W = tf.Variable(tf.truncated_normal(shape=(120, 84), mean=mu, stddev=sigma))
     fc2_b = tf.Variable(tf.zeros(84))
     fc2 = tf.matmul(fc1, fc2_W) + fc2_b
-
+    
     # Activation.
     fc2 = tf.nn.relu(fc2)
-
-    # Layer 5: Fully Connected. Input = 84. Output = 10.
+    #fc2 = tf.nn.dropout(fc2, keep_prob)
+    
+    # Layer 5: Fully Connected. Input = 43. Output = 10.
     fc3_W = tf.Variable(tf.truncated_normal(shape=(84, 43), mean=mu, stddev=sigma))
     fc3_b = tf.Variable(tf.zeros(43))
     logits = tf.matmul(fc2, fc3_W) + fc3_b
 
     return logits
 
+
+# ### Question 4
+# 
+# _How did you train your model? (Type of optimizer, batch size, epochs, hyperparameters, etc.)_
+# 
+
+# **Answer:**
+
+# In[ ]:
+
+
+
+
+# In[8]:
+
+import tensorflow as tf
+from tensorflow.contrib.layers import flatten
+from sklearn.utils import shuffle
+
+EPOCHS = 100
+BATCH_SIZE = 128
+X_train, y_train = shuffle(X_train, y_train)
+
+keep_prob = tf.placeholder(tf.float32)
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
 one_hot_y = tf.one_hot(y, 43)
 
-
+drop_out_prob = 0.75
 rate = 0.001
 logits = LeNet(x)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, one_hot_y)
@@ -249,19 +323,18 @@ correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
 accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 saver = tf.train.Saver()
 
-
 def evaluate(X_data, y_data):
     num_examples = len(X_data)
     total_accuracy = 0
     sess = tf.get_default_session()
     for offset in range(0, num_examples, BATCH_SIZE):
         batch_x, batch_y = X_data[offset:offset + BATCH_SIZE], y_data[offset:offset + BATCH_SIZE]
-        accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y})
+        accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: drop_out_prob })
         total_accuracy += (accuracy * len(batch_x))
     return total_accuracy / num_examples
 
 with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
+    sess.run(tf.global_variables_initializer(),feed_dict={keep_prob: drop_out_prob})
     num_examples = len(X_train)
 
     print("Training...")
@@ -271,7 +344,7 @@ with tf.Session() as sess:
         for offset in range(0, num_examples, BATCH_SIZE):
             end = offset + BATCH_SIZE
             batch_x, batch_y = X_train[offset:end], y_train[offset:end]
-            sess.run(training_operation, feed_dict={x: batch_x, y: batch_y})
+            sess.run(training_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: 0.75})
 
         validation_accuracy = evaluate(X_validation, y_validation)
         print("EPOCH {} ...".format(i + 1))
@@ -280,78 +353,7 @@ with tf.Session() as sess:
 
     saver.save(sess, 'lenet')
     print("Model saved")
-# ----
-# 
-# ## Step 2: Design and Test a Model Architecture
-# 
-# Design and implement a deep learning model that learns to recognize traffic signs. Train and test your model on the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset).
-# 
-# There are various aspects to consider when thinking about this problem:
-# 
-# - Neural network architecture
-# - Play around preprocessing techniques (normalization, rgb to grayscale, etc)
-# - Number of examples per label (some have more than others).
-# - Generate fake data.
-# 
-# Here is an example of a [published baseline model on this problem](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf). It's not required to be familiar with the approach used in the paper but, it's good practice to try to read papers like these.
-# 
-# **NOTE:** The LeNet-5 implementation shown in the [classroom](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/601ae704-1035-4287-8b11-e2c2716217ad/concepts/d4aca031-508f-4e0b-b493-e7b706120f81) at the end of the CNN lesson is a solid starting point. You'll have to change the number of classes and possibly the preprocessing, but aside from that it's plug and play!
 
-# ### Implementation
-# 
-# Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.
-
-# In[ ]:
-
-### Preprocess the data here.
-### Feel free to use as many code cells as needed.
-
-
-# ### Question 1 
-# 
-# _Describe how you preprocessed the data. Why did you choose that technique?_
-
-# **Answer:**
-
-# In[ ]:
-
-### Generate data additional data (OPTIONAL!)
-### and split the data into training/validation/testing sets here.
-### Feel free to use as many code cells as needed.
-
-
-# ### Question 2
-# 
-# _Describe how you set up the training, validation and testing data for your model. **Optional**: If you generated additional data, how did you generate the data? Why did you generate the data? What are the differences in the new dataset (with generated data) from the original dataset?_
-
-# **Answer:**
-
-# In[ ]:
-
-### Define your architecture here.
-### Feel free to use as many code cells as needed.
-
-
-# ### Question 3
-# 
-# _What does your final architecture look like? (Type of model, layers, sizes, connectivity, etc.)  For reference on how to build a deep neural network using TensorFlow, see [Deep Neural Network in TensorFlow
-# ](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/b516a270-8600-4f93-a0a3-20dfeabe5da6/concepts/83a3a2a2-a9bd-4b7b-95b0-eb924ab14432) from the classroom._
-# 
-
-# **Answer:**
-
-# In[ ]:
-
-### Train your model here.
-### Feel free to use as many code cells as needed.
-
-
-# ### Question 4
-# 
-# _How did you train your model? (Type of optimizer, batch size, epochs, hyperparameters, etc.)_
-# 
-
-# **Answer:**
 
 # ### Question 5
 # 
@@ -372,10 +374,82 @@ with tf.Session() as sess:
 # 
 # Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.
 
-# In[ ]:
+# In[78]:
 
 ### Load the images and plot them here.
 ### Feel free to use as many code cells as needed.
+get_ipython().magic('matplotlib inline')
+import os
+from os import listdir
+import matplotlib.image as mpimg
+import csv
+
+image_file_paths = listdir('newImages')
+
+images = []
+for path in image_file_paths:
+    images.append(mpimg.imread('%s%s' % ('newImages/', path)))
+    
+new_signs_img = np.zeros([len(images),32,32,3],dtype=np.uint8)
+
+new_signs_label = np.array([15,28,2,31,33
+                           ],dtype=np.uint8)
+
+# Save label names in "signs"
+signs = []
+with open('signnames.csv', 'r') as csvfile:
+    signnames = csv.reader(csvfile, delimiter=',')
+    next(signnames,None)
+    for row in signnames:
+        signs.append(row[1])
+    csvfile.close()
+
+plt.figure(figsize=(20,20))
+for id,img in enumerate(images):
+    images[id] = cv2.resize(img,dsize=(32,32))
+    new_signs_img[id] = images[id]
+    sub = plt.subplot(6,5,id+1)
+    plt.imshow(new_signs_img[id])
+    sub.set_title("%s, %s" % (signs[new_signs_label[id]], new_signs_label[id]))
+
+pickle_file = 'new_signs.p'
+if not os.path.isfile(pickle_file):
+    print('Saving data to pickle file...')
+    try:
+        with open('new_signs.p', 'wb') as pfile:
+            pickle.dump(
+                {
+                    'data': new_signs_img,
+                    'labels': new_signs_label,
+                },
+                pfile, pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        print('Unable to save data to', pickle_file, ':', e)
+        raise
+
+print('Data cached in pickle file.')
+
+
+# In[79]:
+
+## Load new images from pickle file
+get_ipython().magic('matplotlib inline')
+
+new_signs_file = "new_signs.p"
+
+with open(new_signs_file, mode='rb') as f:
+    new_signs = pickle.load(f)
+    f.close()
+
+X_new = new_signs['data']
+y_new = new_signs['labels']
+
+X_new = pre_process(X_new)
+
+plt.figure(figsize=(15,15))
+for i in range(y_new.size):
+    plt.subplot(6,5,i+1)
+    plt.imshow(X_new[i])
 
 
 # ### Question 6
@@ -386,10 +460,19 @@ with tf.Session() as sess:
 
 # **Answer:**
 
-# In[ ]:
+# In[80]:
 
 ### Run the predictions here.
 ### Feel free to use as many code cells as needed.
+
+saver = tf.train.Saver()
+
+with tf.Session() as sess:
+    saver.restore(sess, tf.train.latest_checkpoint('.'))
+    test_accuracy = sess.run(accuracy_operation, feed_dict={x: X_new, y: y_new, keep_prob:1})
+
+    print("Test Accuracy = {:.3f}".format(test_accuracy))
+  
 
 
 # ### Question 7
@@ -401,10 +484,24 @@ with tf.Session() as sess:
 
 # **Answer:**
 
-# In[ ]:
+# In[81]:
 
 ### Visualize the softmax probabilities here.
 ### Feel free to use as many code cells as needed.
+saver = tf.train.Saver()
+
+softmax = tf.nn.softmax(logits)
+top_3_op = tf.nn.top_k(softmax,3)
+
+with tf.Session() as sess:
+    saver.restore(sess, tf.train.latest_checkpoint('.'))
+    top_3 = sess.run(top_3_op, feed_dict={x: X_new, y: y_new, keep_prob:1})
+
+plt.figure(figsize=(20,50))
+for i in range(y_new.size):
+    sub = plt.subplot(15,3,i+1)
+    plt.imshow(X_new[i])
+    sub.set_title("Prediction: %s, Certainty: %f" % (signs[top_3[1][i][0]], top_3[0][i][0]))
 
 
 # ### Question 8
