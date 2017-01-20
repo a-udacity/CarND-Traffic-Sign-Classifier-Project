@@ -16,7 +16,7 @@
 # ---
 # ## Step 0: Load The Data
 
-# In[1]:
+# In[100]:
 
 # Load pickled data
 import pickle
@@ -48,7 +48,7 @@ X_test, y_test = test['features'], test['labels']
 # 
 # Complete the basic data summary below.
 
-# In[2]:
+# In[101]:
 
 ### Replace each question mark with the appropriate value.
 
@@ -76,7 +76,23 @@ print("Number of classes =", n_classes)
 # 
 # **NOTE:** It's recommended you start with something simple first. If you wish to do more, come back to it after you've completed the rest of the sections.
 
-# In[3]:
+# In[102]:
+
+# load the text labels for the traffic signs
+def read_signnames():
+    signnames = {}
+    with open('signnames.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            signnames[int(row['ClassId'])] = row['SignName']
+        
+    return signnames
+
+
+signnames = read_signnames()
+
+
+# In[103]:
 
 ### Data exploration visualization goes here.
 ### Feel free to use as many code cells as needed.
@@ -85,29 +101,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 get_ipython().magic('matplotlib inline')
+font = {'family': 'serif',
+        'color':  'darkred',
+        'weight': 'normal',
+        'size': 12,
+        }
 
-def plot_images(X_train):
-    index = random.randint(0, len(X_train))
-    image = X_train[index].squeeze()
-    plt.figure(figsize=(1, 1))
-    plt.imshow(image)
-    # print(y_train[index])
+def plot_images_randomly(image_data, labels):
+    plt.figure(figsize=(15,15))
+    for i in range(15):
+        index = random.randint(0, len(image_data))
+        plt.subplot(4,4,i+1)
+        plt.subplots_adjust(left=0.15)
+        plt.imshow(image_data[index])
+        plt.text(0, -2, signnames[labels[index]], fontdict=font)
+       
 
+plot_images_randomly(X_train, y_train)
 
-plot_images(X_train)
-plot_images(X_train)
-plot_images(X_train)
-plot_images(X_train)
-plot_images(X_train)
-
-# plt.figure(figsize=(15,15))
-# def plot_images_randomly(image_data):
-#     for i in range(15):
-#         index = random.randint(0, len(image_data))
-#         plt.subplot(6,5,i+1)
-#         plt.imshow(image_data[index])
-#
-# plot_images_randomly(X_train)
 
 # ----
 # 
@@ -130,7 +141,7 @@ plot_images(X_train)
 # 
 # Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.
 
-# In[4]:
+# In[104]:
 
 ### Preprocess the data here.
 ### Feel free to use as many code cells as needed.
@@ -171,7 +182,7 @@ X_test = pre_process(X_test)
 # **Answer:**
 # A histogram equalization is performed on the three color channels (RGB) and the pixel values are then (Y) in order to improve contrast and accentuate edges. All color channels are then divided by 255.0 in order to ensure that all samples lie in the range (0.0, 1.0) . This technique was utilized to prevent saturation of neurons in the convolutional neural network
 
-# In[5]:
+# In[105]:
 
 ### Generate data additional data (OPTIONAL!)
 ### and split the data into training/validation/testing sets here.
@@ -189,8 +200,12 @@ print()
 print("Training Set:   {} samples".format(len(X_train)))
 print("Validation Set: {} samples".format(len(X_validation)))
 print("Test Set:       {} samples".format(len(X_test)))
-plot_images(X_train)
-plot_images(X_train)
+
+
+# In[106]:
+
+# Plot images after normalization
+plot_images_randomly(X_train, y_train)
 
 
 # ### Question 2
@@ -200,10 +215,11 @@ plot_images(X_train)
 # **Answer:**
 # The training and validation data was split following the general rule of thumb of 8:2 using the train_test_split function.
 
-# In[6]:
+# In[107]:
 
 ### Define your architecture here.
 ### Feel free to use as many code cells as needed.
+# @See below code cells for implementation
 
 
 # ### Question 3
@@ -213,25 +229,35 @@ plot_images(X_train)
 # 
 
 # **Answer:**
-# TODO:::: AZIZ need to revisit all the layers and shapes
-# LENET-5 Architecture was used:
-# Image
-# Convolution
-# Max Pooling
-# Convolution
-# Max Pooling
-# Fully Connected Layer
-# Fully Connected Layer
-# Classifier
+# LENET-5 Architecture with dropout was used:
+# ----------------------------------------
+# My final model is a convolutional neural network with two convolutional, two fully connected (dense) layers and 2 dropout. The first convolutional layer has a filter size of 5x5 and a depth of 6 and enables the network to find an optimal color space transformation for the problem.
+# The following convolutional layers are alternated with pooling layers with a pooling size of 2x2 and increase in depth for deeper layers from 32 to 128 filters.
+# For all layers, rectified linear units (ReLUs) are used as activation functions. The outputs of the pooling layers are combined into an input tensor that is fed into the fully connected layers with 1024 neurons each. 
+# In order to improve the robustness of the network, dropout with a keep probability of 0.75 is used on the fully connected layers. Dropout is a regularization technique for reducing overfitting. The technique temporarily drops units (artificial neurons) from the network, along with all of those units' incoming and outgoing connections. The important point was to make sure that the keep_prob was set to 1.0 when evaluating validation accuracy to get the right result.
+# The output layer is a fully connected layer with 43 output neurons, which corresponds to the number of different classes in the dataset. Finally, the outputs of the last layers are fed into a softmax function in order to calculate the probabilities for each class.
+# The resulting topology is shown below:
 # 
-# Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.
-# Pooling. Input = 28x28x6. Output = 14x14x6.
-# Layer 2: Convolutional. Output = 10x10x16. Pooling. Input = 10x10x16. Output = 5x5x16. Flatten. Input = 5x5x16. Output = 400.
-# Layer 3: Fully Connected. Input = 800. Output = 240. Layer 4: Fully Connected. Input = 240. Output = 168. Layer 5: Fully Connected. Input = 168. Output = 86. Layer 5: Fully Connected. Input = 43. Output = ??.
+# # My Model
+# ![My Model](MyModel.png)
+# 
+# * Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.
+# * Activation.
+# * Layer 2: Convolutional. Output = 10x10x16.
+# * Activation.
+# * Pooling. Input = 10x10x16. Output = 5x5x16.
+# * Flatten. Input = 5x5x16. Output = 400.
+# * Layer 3: Fully Connected. Input = 400. Output = 120.
+# * Activation.
+# * Dropout 1.
+# * Layer 4: Fully Connected. Input = 120. Output = 84.
+# * Activation.
+# * Dropout 2.
+# * Layer 5: Fully Connected. Input = 43. Output = 10.
+#     
 # 
 
-# In[7]:
-
+# In[1]:
 
 ### Train your model here.
 ### Feel free to use as many code cells as needed.
@@ -258,7 +284,6 @@ def LeNet(x):
 
     # Activation.
     conv2 = tf.nn.relu(conv2)
-    #conv2 = tf.nn.dropout(conv2, keep_prob)
 
     # Pooling. Input = 10x10x16. Output = 5x5x16.
     conv2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID')
@@ -273,7 +298,7 @@ def LeNet(x):
 
     # Activation.
     fc1 = tf.nn.relu(fc1)
-    #fc1 = tf.nn.dropout(fc1, keep_prob)
+    fc1 = tf.nn.dropout(fc1, keep_prob)
 
     # Layer 4: Fully Connected. Input = 120. Output = 84.
     fc2_W = tf.Variable(tf.truncated_normal(shape=(120, 84), mean=mu, stddev=sigma))
@@ -282,11 +307,11 @@ def LeNet(x):
     
     # Activation.
     fc2 = tf.nn.relu(fc2)
-    #fc2 = tf.nn.dropout(fc2, keep_prob)
+    fc2 = tf.nn.dropout(fc2, keep_prob)
     
     # Layer 5: Fully Connected. Input = 43. Output = 10.
-    fc3_W = tf.Variable(tf.truncated_normal(shape=(84, 43), mean=mu, stddev=sigma))
-    fc3_b = tf.Variable(tf.zeros(43))
+    fc3_W = tf.Variable(tf.truncated_normal(shape=(84, n_classes), mean=mu, stddev=sigma))
+    fc3_b = tf.Variable(tf.zeros(n_classes))
     logits = tf.matmul(fc2, fc3_W) + fc3_b
 
     return logits
@@ -298,11 +323,20 @@ def LeNet(x):
 # 
 
 # **Answer:**
-
-# In[ ]:
-
-
-
+# The Adam Optimizer was used to get the accuracy. ADAM is in reality a SGD algorithm in which the gradient used in each iteration is updated from the previous using a technique based in momenta. Initially I chose a batch size of 128 and Epoch of 10 but found that increasing the batch size to 100 helped me increase my accuracy to over 98%. From the run I found that chosing a Epoch of 65 would have helped me achieve the accuracy. It took about 10 epochs before the validation accuracy converged. A dropout about 50% reduces overfitting. A L2-regularization with dropout further prevents the network to get conditioned badly.
+# 
+# <pre>
+# | Hyper-parameter | Value        |
+# |-----------------|--------------|
+# |Optimizer Type   |Adam Optimizer|
+# |Batch Size       |128           |
+# |Number of Epoch  |100           |
+# |Learning Rate    |0.001         |
+# |Regularization   |Relu          |
+# |Drop out         |Keep Prob:0.75|
+# |Mean             |0             |
+# |Std Deviation    |0.1           |
+# </pre>
 
 # In[8]:
 
@@ -312,12 +346,13 @@ from sklearn.utils import shuffle
 
 EPOCHS = 100
 BATCH_SIZE = 128
+save_path = "./trained_model/final"
 X_train, y_train = shuffle(X_train, y_train)
 
 keep_prob = tf.placeholder(tf.float32)
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
-one_hot_y = tf.one_hot(y, 43)
+one_hot_y = tf.one_hot(y, n_classes)
 
 drop_out_prob = 0.75
 rate = 0.001
@@ -359,8 +394,8 @@ with tf.Session() as sess:
         print("Validation Accuracy = {:.3f}".format(validation_accuracy))
         print()
 
-    saver.save(sess, 'lenet')
-    print("Model saved")
+    saver.save(sess, save_path)
+    print("Model saved at:" + save_path)
 
 
 # ### Question 5
@@ -369,6 +404,16 @@ with tf.Session() as sess:
 # _What approach did you take in coming up with a solution to this problem? It may have been a process of trial and error, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think this is suitable for the current problem._
 
 # **Answer:**
+# As per the project description I started my project with LENET architecture from the MNIST data as my starting point. I took the following experimentation below to finally reach an accuracy of over 98%:
+# 1. The accuracy decreased when I increased the mean to .2
+# 2. The accuracy decreased when I increased the learning rate to 0.01
+# 3. The accuracy decreased to 85% when I modified the max pool to average pool.
+# 4. Added 2 dropout at keep_prob of 0.5 and EPOCH of 10 but could not get accuracy over 96%
+# 5. Added 2 dropout at keep_prob of 0.75 and increasing the number of EPOCH to 100 with Batch size of 128 increased the accuracy to 97.7. I decided to choose this model.
+# 
+# 
+# 
+# 
 
 # ---
 # 
@@ -382,7 +427,7 @@ with tf.Session() as sess:
 # 
 # Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.
 
-# In[78]:
+# In[109]:
 
 ### Load the images and plot them here.
 ### Feel free to use as many code cells as needed.
@@ -390,7 +435,6 @@ get_ipython().magic('matplotlib inline')
 import os
 from os import listdir
 import matplotlib.image as mpimg
-import csv
 
 image_file_paths = listdir('newImages')
 
@@ -399,65 +443,60 @@ for path in image_file_paths:
     images.append(mpimg.imread('%s%s' % ('newImages/', path)))
     
 new_signs_img = np.zeros([len(images),32,32,3],dtype=np.uint8)
+new_signs_label = np.array([15,28,2,31,33],dtype=np.uint8)
 
-new_signs_label = np.array([15,28,2,31,33
-                           ],dtype=np.uint8)
-
-# Save label names in "signs"
-signs = []
-with open('signnames.csv', 'r') as csvfile:
-    signnames = csv.reader(csvfile, delimiter=',')
-    next(signnames,None)
-    for row in signnames:
-        signs.append(row[1])
-    csvfile.close()
-
-plt.figure(figsize=(20,20))
 for id,img in enumerate(images):
     images[id] = cv2.resize(img,dsize=(32,32))
     new_signs_img[id] = images[id]
-    sub = plt.subplot(6,5,id+1)
-    plt.imshow(new_signs_img[id])
-    sub.set_title("%s, %s" % (signs[new_signs_label[id]], new_signs_label[id]))
 
 pickle_file = 'new_signs.p'
 if not os.path.isfile(pickle_file):
     print('Saving data to pickle file...')
     try:
-        with open('new_signs.p', 'wb') as pfile:
-            pickle.dump(
-                {
+        with open(pickle_file, 'wb') as pfile:
+            pickle.dump({
                     'data': new_signs_img,
-                    'labels': new_signs_label,
-                },
+                    'labels': new_signs_label},
                 pfile, pickle.HIGHEST_PROTOCOL)
     except Exception as e:
-        print('Unable to save data to', pickle_file, ':', e)
+        print('Unable to save data to:', pickle_file, ':', e)
         raise
 
 print('Data cached in pickle file.')
 
 
-# In[79]:
+# In[110]:
 
-## Load new images from pickle file
-get_ipython().magic('matplotlib inline')
 
-new_signs_file = "new_signs.p"
-
-with open(new_signs_file, mode='rb') as f:
+with open(pickle_file, mode='rb') as f:
     new_signs = pickle.load(f)
     f.close()
+
+def plot_extra_images(image_data, labels):
+    plt.figure(figsize=(15,15))
+    for i in range(len(image_data)):
+        plt.subplot(1,5,i+1)
+        plt.subplots_adjust(left=0.15)
+        plt.imshow(image_data[i])
+        plt.text(0, -2, signnames[labels[i]], fontdict=font)
+
 
 X_new = new_signs['data']
 y_new = new_signs['labels']
 
+print("                                         Extra Images                 ")
+plot_extra_images(X_new, y_new)        
+
+
+# In[111]:
+
+## Load and normalize the images
+get_ipython().magic('matplotlib inline')
+
 X_new = pre_process(X_new)
 
-plt.figure(figsize=(15,15))
-for i in range(y_new.size):
-    plt.subplot(6,5,i+1)
-    plt.imshow(X_new[i])
+print("                                     Extra Images after Normalization                ")
+plot_extra_images(X_new, y_new) 
 
 
 # ### Question 6
@@ -467,8 +506,9 @@ for i in range(y_new.size):
 # 
 
 # **Answer:**
+# I took most of the images from the web. The images in between trees where erroring out which I removed from my list. Since I did not normalize my images for angle/jitter, my model would not perform well on those images (Turn Right Ahead as shown above). The background of the images would also affect the model like very dark, rainy or snowy backgrounds (Children Crossing). Some images that are blurred and blend with sky or background would be hard to classify using this model (No Vehicles).
 
-# In[80]:
+# In[112]:
 
 ### Run the predictions here.
 ### Feel free to use as many code cells as needed.
@@ -476,7 +516,7 @@ for i in range(y_new.size):
 saver = tf.train.Saver()
 
 with tf.Session() as sess:
-    saver.restore(sess, tf.train.latest_checkpoint('.'))
+    saver.restore(sess, save_path)
     test_accuracy = sess.run(accuracy_operation, feed_dict={x: X_new, y: y_new, keep_prob:1})
 
     print("Test Accuracy = {:.3f}".format(test_accuracy))
@@ -491,25 +531,31 @@ with tf.Session() as sess:
 # 
 
 # **Answer:**
+# From the prediction I did to the candidate image, the testing accuracy is 60%, however, the model prediction accuracy on the training set was 97.7%. As a result, I believe my model did not perform well in the real world situation. 
+# The possible reasons would be:
+# 1) The angle of the image (Right Turn Ahead). Better Normalization of Jitter images would have helped
+# 2) Blurred and images blended with sky or background for e.g  (Children Crossing) - Increasing the convolutional layers and decreasing the Filter shape might have helped
+# 3) Signs not included in the training model would not have been classified correctly.
 
-# In[81]:
+# In[113]:
 
 ### Visualize the softmax probabilities here.
 ### Feel free to use as many code cells as needed.
+
 saver = tf.train.Saver()
 
 softmax = tf.nn.softmax(logits)
 top_3_op = tf.nn.top_k(softmax,3)
 
 with tf.Session() as sess:
-    saver.restore(sess, tf.train.latest_checkpoint('.'))
+    saver.restore(sess, save_path)
     top_3 = sess.run(top_3_op, feed_dict={x: X_new, y: y_new, keep_prob:1})
 
 plt.figure(figsize=(20,50))
 for i in range(y_new.size):
     sub = plt.subplot(15,3,i+1)
     plt.imshow(X_new[i])
-    sub.set_title("Prediction: %s, Certainty: %f" % (signs[top_3[1][i][0]], top_3[0][i][0]))
+    sub.set_title("Prediction: %s, Certainty: %f" % (signnames[top_3[1][i][0]], top_3[0][i][0]))
 
 
 # ### Question 8
