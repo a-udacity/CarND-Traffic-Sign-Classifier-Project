@@ -44475,36 +44475,35 @@ The training and validation data was split following the general rule of thumb o
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong></p>
-<h2 id="LENET-5-Architecture-with-dropout-was-used:">LENET-5 Architecture with dropout was used:<a class="anchor-link" href="#LENET-5-Architecture-with-dropout-was-used:">&#182;</a></h2><p>Inpur Image 32X32X3
-Convolution 1
-Max Pooling
-Convolution 2
-Max Pooling
-Fully Connected Layer 1
-Dropout 1
-Fully Connected Layer 2
-Dropout 2
-Classifier</p>
-<p>Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.
-Activation.
-Layer 2: Convolutional. Output = 10x10x16.
-Activation.
-Pooling. Input = 10x10x16. Output = 5x5x16.
-Flatten. Input = 5x5x16. Output = 400.
-Layer 3: Fully Connected. Input = 400. Output = 120.
-Activation.
-Dropout 1.
-Layer 4: Fully Connected. Input = 120. Output = 84.
-Activation.
-Dropout 2.
-Layer 5: Fully Connected. Input = 43. Output = 10.</p>
+<h2 id="LENET-5-Architecture-with-dropout-was-used:">LENET-5 Architecture with dropout was used:<a class="anchor-link" href="#LENET-5-Architecture-with-dropout-was-used:">&#182;</a></h2><p>My final model is a convolutional neural network with two convolutional, two fully connected (dense) layers and 2 dropout. The first convolutional layer has a filter size of 5x5 and a depth of 6 and enables the network to find an optimal color space transformation for the problem.
+The following convolutional layers are alternated with pooling layers with a pooling size of 2x2 and increase in depth for deeper layers from 32 to 128 filters.
+For all layers, rectified linear units (ReLUs) are used as activation functions. The outputs of the pooling layers are combined into an input tensor that is fed into the fully connected layers with 1024 neurons each. 
+In order to improve the robustness of the network, dropout with a keep probability of 0.75 is used on the fully connected layers. Dropout is a regularization technique for reducing overfitting. The technique temporarily drops units (artificial neurons) from the network, along with all of those units' incoming and outgoing connections. The important point was to make sure that the keep_prob was set to 1.0 when evaluating validation accuracy to get the right result.
+The output layer is a fully connected layer with 43 output neurons, which corresponds to the number of different classes in the dataset. Finally, the outputs of the last layers are fed into a softmax function in order to calculate the probabilities for each class.
+The resulting topology is shown below:</p>
+<h1 id="My-Model">My Model<a class="anchor-link" href="#My-Model">&#182;</a></h1><p><img src="MyModel.png" alt="My Model"></p>
+<ul>
+<li>Layer 1: Convolutional. Input = 32x32x3. Output = 28x28x6.</li>
+<li>Activation.</li>
+<li>Layer 2: Convolutional. Output = 10x10x16.</li>
+<li>Activation.</li>
+<li>Pooling. Input = 10x10x16. Output = 5x5x16.</li>
+<li>Flatten. Input = 5x5x16. Output = 400.</li>
+<li>Layer 3: Fully Connected. Input = 400. Output = 120.</li>
+<li>Activation.</li>
+<li>Dropout 1.</li>
+<li>Layer 4: Fully Connected. Input = 120. Output = 84.</li>
+<li>Activation.</li>
+<li>Dropout 2.</li>
+<li>Layer 5: Fully Connected. Input = 43. Output = 10.</li>
+</ul>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[108]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">### Train your model here.</span>
@@ -44586,8 +44585,19 @@ Layer 5: Fully Connected. Input = 43. Output = 10.</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-The Adam Optimizer was used to get the accurary. Initially I chose a batch size of 10 but found that increasing the batch size to 100 helped me increase my accuray to over 98%. From the run I found that chosing a batch size of 65 would have helped me achieve the accurary. It took about 10 epochs before the validation accuracy converged. A dropout about 50% reduces overfitting. A L2-regularization with dropout further prevents the network to get conditioned badly.</p>
-
+The Adam Optimizer was used to get the accuracy. ADAM is in reality a SGD algorithm in which the gradient used in each iteration is updated from the previous using a technique based in momenta. Initially I chose a batch size of 128 and Epoch of 10 but found that increasing the batch size to 100 helped me increase my accuracy to over 98%. From the run I found that chosing a Epoch of 65 would have helped me achieve the accuracy. It took about 10 epochs before the validation accuracy converged. A dropout about 50% reduces overfitting. A L2-regularization with dropout further prevents the network to get conditioned badly.</p>
+<pre>
+| Hyper-parameter | Value        |
+|-----------------|--------------|
+|Optimizer Type   |Adam Optimizer|
+|Batch Size       |128           |
+|Number of Epoch  |100           |
+|Learning Rate    |0.001         |
+|Regularization   |Relu          |
+|Drop out         |Keep Prob:0.75|
+|Mean             |0             |
+|Std Deviation    |0.1           |
+</pre>
 </div>
 </div>
 </div>
@@ -44991,12 +45001,14 @@ Model saved
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-As per the project description I started my project with LENET architecture from the MNIST data as my starting point. I took the following experimentation below to finally reach an accuracy of over 98%:
-A) The accuracy decreased when I increased the mean to .2
-B) The accuracy decreased when I increased the learning reate to 0.01
-C) The accuracy decreased when I modified the max pool to average pool to 85%
-D) Added 2 dropout at 0.5 and EPOCH to 10 but could not get accuracy over 96%
-E) Added 2 dropout at 0.75 and increasing the EPOCH to 100 now got me an accurary of 98.6. This is the MODEL I selected for my project.</p>
+As per the project description I started my project with LENET architecture from the MNIST data as my starting point. I took the following experimentation below to finally reach an accuracy of over 98%:</p>
+<ol>
+<li>The accuracy decreased when I increased the mean to .2</li>
+<li>The accuracy decreased when I increased the learning rate to 0.01</li>
+<li>The accuracy decreased to 85% when I modified the max pool to average pool.</li>
+<li>Added 2 dropout at keep_prob of 0.5 and EPOCH of 10 but could not get accuracy over 96%</li>
+<li>Added 2 dropout at keep_prob of 0.75 and increasing the number of EPOCH to 100 with Batch size of 128 increased the accuracy to 97.7. I decided to choose this model.</li>
+</ol>
 
 </div>
 </div>
@@ -54657,7 +54669,7 @@ B3vqNDO6yFPFAAAAAElFTkSuQmCC
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-I took most of the images from the web. The images in between trees where erroring out which i removed from my list.</p>
+I took most of the images from the web. The images in between trees where erroring out which I removed from my list. Since I did not normalize my images for angle/jitter, my model would not perform well on those images (Turn Right Ahead as shown above). The background of the images would also affect the model like very dark, rainy or snowy backgrounds (Children Crossing). Some images that are blurred and blend with sky or background would be hard to classify using this model (No Vehicles).</p>
 
 </div>
 </div>
@@ -54716,7 +54728,11 @@ I took most of the images from the web. The images in between trees where errori
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-My model showed an accuracy of 80% as shown.</p>
+From the prediction I did to the candidate image, the testing accuracy is 60%, however, the model prediction accuracy on the training set was 97.7%. As a result, I believe my model did not perform well in the real world situation. 
+The possible reasons would be:
+1) The angle of the image (Right Turn Ahead). Better Normalization of Jitter images would have helped
+2) Blurred and images blended with sky or background for e.g  (Children Crossing) - Increasing the convolutional layers and decreasing the Filter shape might have helped
+3) Signs not included in the training model would not have been classified correctly.</p>
 
 </div>
 </div>
@@ -54728,6 +54744,7 @@ My model showed an accuracy of 80% as shown.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">### Visualize the softmax probabilities here.</span>
 <span class="c1">### Feel free to use as many code cells as needed.</span>
+
 <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
 
 <span class="n">softmax</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
